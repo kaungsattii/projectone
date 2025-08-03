@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ညဘက်နိုးကြားသူများအတွက် လမ်းညွှန်</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: The application is structured as a single-page exploratory journey. It starts with validating the user's experience (Hero), moves to explaining the science behind it ("The Why"), visualizes the core problem (The Vicious Cycle), provides actionable, categorized solutions ("Action Plan"), and ends with a tool to create a personalized plan. This non-linear, thematic structure is chosen over the report's linear format to make the information more digestible and empowering. It guides the user from understanding to action, reducing overwhelm by breaking down strategies into interactive, manageable sections. -->
+    <!-- Visualization & Content Choices: 
+        1. Report Info: Chronotype comparison (Table 1). Goal: Compare. Viz: Interactive Bar Chart (Chart.js). Interaction: Hover for details. Justification: More engaging and visually clearer than a static table for comparing two distinct profiles.
+        2. Report Info: Daytime drain/nighttime surge feedback loop. Goal: Show Relationship. Viz: Custom HTML/CSS diagram. Interaction: Clickable hotspots to reveal detailed text. Justification: Visually explains the complex feedback loop in a simple, intuitive way that text alone cannot.
+        3. Report Info: Daily habits for optimization (Table 3). Goal: Organize/Inform. Viz: Interactive checklist/cards. Interaction: Click to select and add to a personalized plan. Justification: Turns passive information into an active tool, empowering the user to make choices and see a tangible output, which boosts motivation.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Padauk', sans-serif;
+            background-color: #F5F5F4; /* Stone 100 */
+            color: #374151; /* Gray 700 */
+        }
+        .tab-active {
+            background-color: #0d9488; /* Teal 600 */
+            color: white;
+        }
+        .tab-inactive {
+            background-color: #ccfbf1; /* Teal 100 */
+            color: #134e4a; /* Teal 900 */
+        }
+        .section-fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .section-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 500px;
+                max-height: 60vh;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-teal-700">သင့်ရဲ့ စည်းချက်ကို ရှာဖွေပါ</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#intro" class="text-gray-600 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium">နိဒါန်း</a>
+                        <a href="#why" class="text-gray-600 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium">အကြောင်းရင်း</a>
+                        <a href="#cycle" class="text-gray-600 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium">သံသရာစက်ဝန်း</a>
+                        <a href="#action-plan" class="text-gray-600 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium">လုပ်ဆောင်ရန် အစီအစဉ်</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="intro" class="py-16 sm:py-24 bg-white section-fade-in">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-800">ညဘက်ရောက်မှ စိတ်ကပိုကြွ၊ အိုင်ဒီယာတွေထွက်နေသလား?</h2>
+                <p class="mt-6 max-w-2xl mx-auto text-lg text-gray-600">သင်တစ်ယောက်တည်းမဟုတ်ပါဘူး။ နေ့ခင်းဘက်မှာ ပျင်းရိလေးလံပြီး ညဘက်ရောက်မှ တက်ကြွလန်းဆန်းနေတာဟာ ပျင်းလို့မဟုတ်ပါဘူး။ သင့်ခန္ဓာကိုယ်ရဲ့ သဘာဝနာရီနဲ့ သက်ဆိုင်နေပါတယ်။ ဒီ application က သင့်ရဲ့ထူးခြားတဲ့ စွမ်းအင်စည်းချက်ကို နားလည်ပြီး နေ့ရောညပါ အကောင်းဆုံးဖြစ်အောင် ဘယ်လိုနေထိုင်ရမလဲဆိုတာ လမ်းညွှန်ပေးမှာပါ။</p>
+                <div class="mt-10">
+                    <a href="#why" class="inline-block bg-teal-600 text-white font-bold py-3 px-8 rounded-full text-lg hover:bg-teal-700 transition duration-300">စတင်လေ့လာကြစို့</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="why" class="py-16 sm:py-24 section-fade-in">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800">အကြောင်းရင်းကို နားလည်ခြင်း - သင့်ရဲ့ အတွင်းနာရီ</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">ကျွန်တော်တို့ရဲ့ ခန္ဓာကိုယ်ဟာ Circadian Rhythm လို့ခေါ်တဲ့ ၂၄ နာရီလည်ပတ်တဲ့ အတွင်းနာရီတစ်ခုနဲ့ အလုပ်လုပ်ပါတယ်။ ဒီနာရီက အိပ်ချိန်၊ နိုးချိန်၊ ဟော်မုန်းထုတ်လွှတ်မှုနဲ့ စွမ်းအင်ပမာဏကို ထိန်းချုပ်ပေးပါတယ်။ လူတိုင်းရဲ့ အတွင်းနာရီက မတူညီကြပါဘူး။ ဒါကို Chronotype လို့ခေါ်ပါတယ်။</p>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                    <h3 class="text-2xl font-bold text-center mb-6 text-gray-700">သင်က ဘယ်အမျိုးအစားလဲ? မနက်စောစောထသူလား ညဉ့်နက်သူလား?</h3>
+                    <div class="chart-container">
+                        <canvas id="chronotypeChart"></canvas>
+                    </div>
+                    <p class="text-center mt-4 text-sm text-gray-500">Chart ပေါ်တွင် mouse တင်၍ အသေးစိတ်အချက်အလက်များကို ကြည့်ရှုနိုင်ပါသည်။</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="cycle" class="py-16 sm:py-24 bg-stone-200 section-fade-in">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800">သံသရာစက်ဝန်းကို ချိုးဖျက်ခြင်း</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">နေ့ခင်းဘက် ဂိမ်းဆော့၊ ရုပ်ရှင်ကြည့်တာကနေ ညဘက်တက်ကြွပြီး အိပ်မပျော်တဲ့အထိ ဖြစ်ပေါ်နေတဲ့ သံသရာလည်နေတဲ့ စက်ဝန်းတစ်ခု ရှိနေပါတယ်။ အောက်ပါပုံတွင် အချက်အလက်များကိုနှိပ်၍ ဒီစက်ဝန်းက သင့်အပေါ် ဘယ်လိုသက်ရောက်မှုရှိလဲဆိုတာ လေ့လာကြည့်ပါ။</p>
+                </div>
+
+                <div class="relative max-w-4xl mx-auto p-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div class="space-y-8">
+                            <div id="cycle-item-1" class="cycle-item p-6 bg-white rounded-xl shadow-md cursor-pointer hover:shadow-xl transition-shadow duration-300">
+                                <h4 class="text-xl font-bold text-teal-700">☀️ နေ့ခင်းဘက် စွမ်းအင်ကျဆင်းခြင်း</h4>
+                                <p class="text-gray-600 mt-2">ဂိမ်းဆော့ခြင်း၊ ရုပ်ရှင်ကြည့်ခြင်းကဲ့သို့ ဦးနှောက်သိပ်မသုံးရတဲ့ အရာတွေကနေ အလွယ်တကူပျော်ရွှင်မှု (Dopamine) ကို ရရှိစေပါတယ်။</p>
+                            </div>
+                             <div id="cycle-item-2" class="cycle-item p-6 bg-white rounded-xl shadow-md cursor-pointer hover:shadow-xl transition-shadow duration-300">
+                                <h4 class="text-xl font-bold text-teal-700">🌙 ညဘက် Screen Time များခြင်း</h4>
+                                <p class="text-gray-600 mt-2">Screen ကထွက်တဲ့ အပြာရောင်အလင်းတန်းက အိပ်စက်ခြင်းကို အားပေးတဲ့ Melatonin ဟော်မုန်းထုတ်လုပ်မှုကို တားဆီးပါတယ်။</p>
+                            </div>
+                        </div>
+                        <div class="space-y-8">
+                            <div id="cycle-item-3" class="cycle-item p-6 bg-white rounded-xl shadow-md cursor-pointer hover:shadow-xl transition-shadow duration-300">
+                                <h4 class="text-xl font-bold text-teal-700">😴 အိပ်စက်မှု အရည်အသွေးကျဆင်းခြင်း</h4>
+                                <p class="text-gray-600 mt-2">အိပ်ချိန်မမှန်ခြင်းနဲ့ အရည်အသွေးမကောင်းတဲ့ အိပ်စက်မှုက နောက်တစ်နေ့အတွက် စွမ်းအင်နဲ့ အာရုံစူးစိုက်မှုကို လျော့ကျစေပါတယ်။</p>
+                            </div>
+                             <div id="cycle-item-4" class="cycle-item p-6 bg-white rounded-xl shadow-md cursor-pointer hover:shadow-xl transition-shadow duration-300">
+                                <h4 class="text-xl font-bold text-teal-700">😩 စိတ်ဖိစီးမှုနှင့် ပျင်းရိခြင်း</h4>
+                                <p class="text-gray-600 mt-2">စွမ်းအင်နည်းပါးလာတဲ့အခါ အားစိုက်ထုတ်ရတဲ့အလုပ်တွေထက် လွယ်ကူတဲ့ ဖျော်ဖြေရေးတွေကိုပဲ ပိုလုပ်ချင်လာပြီး သံသရာလည်စေပါတယ်။</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <div id="cycle-details" class="mt-8 max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-lg hidden">
+                    <h3 id="details-title" class="text-2xl font-bold text-gray-800 mb-4"></h3>
+                    <p id="details-text" class="text-gray-600"></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="action-plan" class="py-16 sm:py-24 section-fade-in">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800">သင့်အတွက် လက်တွေ့ကျတဲ့ လုပ်ဆောင်ရန် အစီအစဉ်</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">သင့်ရဲ့နေ့စဉ်ဘဝကို ပြန်လည်ထိန်းချုပ်နိုင်ဖို့အတွက် အောက်ပါနည်းလမ်းတွေကို လေ့လာပြီး ကိုယ်ပိုင်အစီအစဉ်တစ်ခု တည်ဆောက်လိုက်ပါ။</p>
+                </div>
+
+                <div class="max-w-4xl mx-auto">
+                    <div class="mb-4 flex flex-wrap justify-center gap-2">
+                        <button data-tab="tab1" class="tab-button tab-active px-4 py-2 font-semibold rounded-full transition">သင့်စည်းချက်နဲ့ လိုက်လျောညီထွေဖြစ်အောင်နေပါ</button>
+                        <button data-tab="tab2" class="tab-button tab-inactive px-4 py-2 font-semibold rounded-full transition">Screen Time ကို ထိန်းချုပ်ပါ</button>
+                        <button data-tab="tab3" class="tab-button tab-inactive px-4 py-2 font-semibold rounded-full transition">နေ့ခင်းဘက် စွမ်းအင်မြှင့်တင်ပါ</button>
+                        <button data-tab="tab4" class="tab-button tab-inactive px-4 py-2 font-semibold rounded-full transition">အိပ်စက်မှု အရည်အသွေးမြှင့်တင်ပါ</button>
+                    </div>
+
+                    <div id="tab-content" class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                        <div id="tab1" class="tab-pane active">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">သင့်ရဲ့ သဘာဝစည်းချက်ကို အကောင်းဆုံးအသုံးချပါ</h3>
+                            <div class="space-y-4">
+                                <div class="plan-item" data-id="1" data-title="အကောင်းဆုံးအချိန်ကို အသုံးချပါ">ညနေပိုင်းနဲ့ ညဘက်တွေမှာ ဦးနှောက်အသုံးရဆုံး အလုပ်တွေ၊ ဖန်တီးမှုပိုင်းဆိုင်ရာ အလုပ်တွေကို လုပ်ဆောင်ပါ။</div>
+                                <div class="plan-item" data-id="2" data-title="တဖြည်းဖြည်းပြောင်းလဲပါ">အိပ်ချိန်၊ ထချိန်ကို တစ်နေ့ ၁၅ မိနစ်စီလိုမျိုး တဖြည်းဖြည်းချင်း ပြောင်းလဲကြည့်ပါ။</div>
+                                <div class="plan-item" data-id="3" data-title="မနက်ခင်း နေရောင်ခြည်ခံယူပါ">မနက်ခင်းမှာ အနည်းဆုံး ၁၀ မိနစ်ခန့် နေရောင်ခြည်ခံယူခြင်းက သင့်ရဲ့ အတွင်းနာရီကို ထိန်းညှိပေးပါတယ်။</div>
+                                <div class="plan-item" data-id="4" data-title="ညဘက် အလင်းရောင်လျှော့ချပါ">အိပ်ရာမဝင်ခင် ၁-၂ နာရီအလိုမှာ အလင်းရောင်မှိန်မှိန်နဲ့နေပြီး ဖုန်း၊ တီဗီ Screen တွေကို ရှောင်ပါ။</div>
+                            </div>
+                        </div>
+                        <div id="tab2" class="tab-pane hidden">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Screen Time ကို အကျိုးရှိရှိ အသုံးချပါ</h3>
+                             <div class="space-y-4">
+                                <div class="plan-item" data-id="5" data-title="Digital Wind-down လုပ်ပါ">အိပ်ရာမဝင်ခင် အနည်းဆုံး ၁ နာရီအလိုမှာ Screen အားလုံးကို ပိတ်ပါ။</div>
+                                <div class="plan-item" data-id="6" data-title="Active Engagement ကိုရွေးချယ်ပါ">Passive ကြည့်ရှုခြင်းထက် ဦးနှောက်သုံးရတဲ့ ဂိမ်း၊ ပညာရေးဆိုင်ရာ အကြောင်းအရာတွေကို ရွေးချယ်ပါ။</div>
+                                <div class="plan-item" data-id="7" data-title="အချိန်သတ်မှတ်ပါ">ဖျော်ဖြေရေးအတွက် အချိန်ကန့်သတ်ပြီး အဲ့ဒီအချိန်အတိုင်း လိုက်နာပါ။</div>
+                                <div class="plan-item" data-id="8" data-title="မနက်ခင်း Screen ရှောင်ပါ">နိုးနိုးချင်း ဖုန်းသုံးတာကိုရှောင်ပြီး စိတ်ကို ဖြည်းဖြည်းချင်း နိုးထစေပါ။</div>
+                            </div>
+                        </div>
+                        <div id="tab3" class="tab-pane hidden">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">နေ့ခင်းဘက် စွမ်းအင်နဲ့ အာရုံစူးစိုက်မှု မြှင့်တင်နည်းများ</h3>
+                             <div class="space-y-4">
+                                <div class="plan-item" data-id="9" data-title="လေ့ကျင့်ခန်းလုပ်ပါ">တစ်နေ့ကို အနည်းဆုံး မိနစ် ၃၀ လေ့ကျင့်ခန်းလုပ်ခြင်းက စိတ်ရောကိုယ်ပါ လန်းဆန်းစေပါတယ်။</div>
+                                <div class="plan-item" data-id="10" data-title="အာဟာရပြည့်ဝအောင်စားပါ">ဦးနှောက်အတွက်ကောင်းတဲ့ အစားအစာတွေ (ငါး၊ အစိမ်းရောင်အရွက်များ) ကိုစားပြီး သကြားများတဲ့ အစားအစာတွေကို ရှောင်ပါ။</div>
+                                <div class="plan-item" data-id="11" data-title="Mindfulness လေ့ကျင့်ပါ">တရားထိုင်ခြင်း၊ အသက်ရှုလေ့ကျင့်ခန်းလုပ်ခြင်းက စိတ်ဖိစီးမှုကို လျော့ကျစေပြီး အာရုံစူးစိုက်မှုကို ကောင်းမွန်စေပါတယ်။</div>
+                                <div class="plan-item" data-id="12" data-title="အနားယူချိန်ထားပါ">Pomodoro Technique (အလုပ်ချိန် ၂၅ မိနစ်၊ အနား ၅ မိနစ်) လိုမျိုး နည်းလမ်းတွေသုံးပြီး အနားယူပါ။</div>
+                            </div>
+                        </div>
+                        <div id="tab4" class="tab-pane hidden">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">ကောင်းမွန်စွာ အိပ်စက်နိုင်ရန်</h3>
+                             <div class="space-y-4">
+                                <div class="plan-item" data-id="13" data-title="အိပ်ခန်းကို အိပ်စက်ဖို့ သီးသန့်ထားပါ">အိပ်ခန်းကို မှောင်မောင်၊ တိတ်ဆိတ်ပြီး အေးမြအောင်ထားပါ။</div>
+                                <div class="plan-item" data-id="14" data-title="အိပ်ချိန်၊ ထချိန် မှန်မှန်ထားပါ">ပိတ်ရက်တွေမှာတောင် အိပ်ချိန်၊ ထချိန်ကို ပုံမှန်ဖြစ်အောင် ကြိုးစားပါ။</div>
+                                <div class="plan-item" data-id="15" data-title="Relaxing Routine လုပ်ပါ">အိပ်ရာမဝင်ခင် စာအုပ်ဖတ်တာ၊ သီချင်းအေးအေးလေးတွေ နားထောင်တာမျိုးလုပ်ပါ။</div>
+                                <div class="plan-item" data-id="16" data-title="ကဖင်းနဲ့ အစားကြီးတာကို ရှောင်ပါ">ညနေပိုင်းနောက်ပိုင်း ကဖင်းဓာတ်ပါတဲ့ သောက်စရာတွေနဲ့ အစာများများစားတာကို ရှောင်ပါ။</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="my-plan" class="mt-12 max-w-4xl mx-auto section-fade-in">
+                    <div class="bg-teal-50 rounded-xl p-6 md:p-8 border-2 border-dashed border-teal-200">
+                        <h3 class="text-2xl font-bold text-center text-teal-800 mb-4">ကျွန်ုပ်၏ ကိုယ်ပိုင်လုပ်ဆောင်ရန် အစီအစဉ်</h3>
+                        <p class="text-center text-teal-700 mb-6">အပေါ်က အကြံပြုချက်တွေထဲက သင်လုပ်ဆောင်ချင်တာတွေကို နှိပ်ပြီး သင့်ရဲ့ ကိုယ်ပိုင်အစီအစဉ်ကို တည်ဆောက်လိုက်ပါ။</p>
+                        <ul id="plan-list" class="list-disc list-inside space-y-2 text-gray-700">
+                            <li id="plan-placeholder" class="text-gray-500">သင်ရွေးချယ်ထားသော အစီအစဉ်များ ဤနေရာတွင် ပေါ်လာပါမည်။</li>
+                        </ul>
+                        <div class="text-center mt-6">
+                            <button id="clear-plan" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-600 transition hidden">အစီအစဉ်ကိုရှင်းလင်းမည်</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p>သင့်ရဲ့ သဘာဝစည်းချက်ကို လက်ခံပြီး မျှတတဲ့ဘဝတစ်ခုကို တည်ဆောက်လိုက်ပါ။</p>
+            <p class="text-sm text-gray-400 mt-2">&copy; 2025 Interactive Guide. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chronotypeChartCtx = document.getElementById('chronotypeChart').getContext('2d');
+            const chronotypeChart = new Chart(chronotypeChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['မနက်စောစောထသူ (Morning Lark)', 'ညဉ့်နက်သူ (Night Owl)'],
+                    datasets: [{
+                        label: 'အိပ်ချိန် (အကြံပြု)',
+                        data: [8, 9],
+                        backgroundColor: '#34d399',
+                        borderColor: '#059669',
+                        borderWidth: 1,
+                        stack: 'Stack 0',
+                    }, {
+                        label: 'အကောင်းဆုံးလုပ်ဆောင်နိုင်ချိန် (အကြံပြု)',
+                        data: [4, 7],
+                        backgroundColor: '#fbbf24',
+                        borderColor: '#d97706',
+                        borderWidth: 1,
+                        stack: 'Stack 0',
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Chronotype များ၏ အိပ်ချိန်နှင့် လုပ်ဆောင်နိုင်စွမ်း နှိုင်းယှဉ်ချက် (နာရီ)',
+                            font: { size: 16, family: 'Padauk' },
+                            color: '#374151'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.dataset.label === 'အိပ်ချိန် (အကြံပြု)') {
+                                        if (context.label === 'မနက်စောစောထသူ (Morning Lark)') {
+                                            label += 'ည 10 PM - မနက် 6 AM';
+                                        } else {
+                                            label += 'မနက် 1 AM - မနက် 9 AM';
+                                        }
+                                    } else {
+                                        if (context.label === 'မနက်စောစောထသူ (Morning Lark)') {
+                                            label += 'မနက် 9 AM - နေ့လည် 1 PM';
+                                        } else {
+                                            label += 'ညနေ 4 PM - ည 11 PM';
+                                        }
+                                    }
+                                    return label;
+                                }
+                            },
+                            bodyFont: { family: 'Padauk' },
+                            titleFont: { family: 'Padauk' }
+                        },
+                        legend: {
+                           labels: {
+                               font: {
+                                   family: 'Padauk'
+                               }
+                           }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            title: {
+                                display: true,
+                                text: 'နာရီ (ခန့်မှန်း)',
+                                font: { family: 'Padauk' }
+                            },
+                            ticks: { font: { family: 'Padauk' } }
+                        },
+                        y: {
+                            stacked: true,
+                            ticks: { font: { family: 'Padauk', size: 12 } }
+                        }
+                    }
+                }
+            });
+
+            const tabs = document.querySelectorAll('.tab-button');
+            const panes = document.querySelectorAll('.tab-pane');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(item => {
+                        item.classList.remove('tab-active');
+                        item.classList.add('tab-inactive');
+                    });
+                    tab.classList.add('tab-active');
+                    tab.classList.remove('tab-inactive');
+
+                    panes.forEach(pane => {
+                        pane.classList.add('hidden');
+                    });
+                    document.getElementById(tab.dataset.tab).classList.remove('hidden');
+                });
+            });
+            
+            const cycleItems = document.querySelectorAll('.cycle-item');
+            const cycleDetails = document.getElementById('cycle-details');
+            const detailsTitle = document.getElementById('details-title');
+            const detailsText = document.getElementById('details-text');
+
+            const cycleData = {
+                'cycle-item-1': {
+                    title: '☀️ နေ့ခင်းဘက် စွမ်းအင်ကျဆင်းခြင်း',
+                    text: 'တစ်နေ့တာလုံး အားစိုက်ထုတ်ရတဲ့ အလုပ်တွေက စိတ်ပင်ပန်းစေပြီး လွယ်ကူတဲ့ ဖျော်ဖြေရေးတွေကို ပိုမိုတောင့်တလာစေပါတယ်။ ဂိမ်းနဲ့ ရုပ်ရှင်တွေကနေရတဲ့ ချက်ချင်းကျေနပ်မှုက ဦးနှောက်ရဲ့ reward system ကို ပြောင်းလဲစေပြီး အလုပ်လုပ်လိုစိတ်ကို လျော့ကျစေပါတယ်။'
+                },
+                'cycle-item-2': {
+                    title: '🌙 ညဘက် Screen Time များခြင်း',
+                    text: 'ညဘက်မှာ Screen တွေ အကြာကြီးသုံးစွဲခြင်းက အိပ်စက်ခြင်းကို အားပေးတဲ့ Melatonin ဟော်မုန်းထုတ်လုပ်မှုကို နှောင့်ယှက်ပါတယ်။ ဒါ့အပြင် ဦးနှောက်ကို နိုးကြားတက်ကြွနေစေပြီး အိပ်ရာဝင်ဖို့ ခက်ခဲစေပါတယ်။'
+                },
+                'cycle-item-3': {
+                    title: '😴 အိပ်စက်မှု အရည်အသွေးကျဆင်းခြင်း',
+                    text: 'အိပ်ချိန်မလုံလောက်ခြင်း၊ အိပ်စက်မှုအရည်အသွေးကျဆင်းခြင်းတွေက နောက်တစ်နေ့မှာ အာရုံစူးစိုက်နိုင်စွမ်း၊ ဆုံးဖြတ်ချက်ချနိုင်စွမ်းနဲ့ စိတ်ခံစားမှုတွေကို ထိခိုက်စေပါတယ်။ ဒါက ပိုပြီး ပျင်းရိလေးလံစေပါတယ်။'
+                },
+                'cycle-item-4': {
+                    title: '😩 စိတ်ဖိစီးမှုနှင့် ပျင်းရိခြင်း',
+                    text: 'စွမ်းအင်နည်းပါးပြီး ပင်ပန်းနေတဲ့အခါမှာ ခန္ဓာကိုယ်နဲ့စိတ်က အလွယ်ဆုံးလမ်းကို ရွေးချယ်တတ်ပါတယ်။ ဒါကြောင့် အားစိုက်ထုတ်ရမယ့် အလုပ်တွေအစား Screen ရှေ့မှာပဲ အချိန်ကုန်ဆုံးဖို့ ပိုလွယ်ကူသွားပြီး ဒီသံသရာကနေ မထွက်နိုင်ဖြစ်စေပါတယ်။'
+                }
+            };
+            
+            cycleItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const data = cycleData[item.id];
+                    detailsTitle.textContent = data.title;
+                    detailsText.textContent = data.text;
+                    cycleDetails.classList.remove('hidden');
+                });
+            });
+
+            const planItems = document.querySelectorAll('.plan-item');
+            const planList = document.getElementById('plan-list');
+            const planPlaceholder = document.getElementById('plan-placeholder');
+            const clearPlanBtn = document.getElementById('clear-plan');
+            let myPlan = [];
+
+            planItems.forEach(item => {
+                const check = document.createElement('span');
+                check.innerHTML = '&#x2713; ';
+                check.className = 'text-green-500 font-bold hidden';
+                item.insertBefore(check, item.firstChild);
+                item.classList.add('cursor-pointer', 'p-3', 'rounded-lg', 'hover:bg-teal-50', 'transition');
+
+                item.addEventListener('click', () => {
+                    const id = item.dataset.id;
+                    const title = item.dataset.title;
+                    const checkmark = item.querySelector('span');
+                    
+                    if (myPlan.some(p => p.id === id)) {
+                        myPlan = myPlan.filter(p => p.id !== id);
+                        item.classList.remove('bg-green-100', 'font-semibold');
+                        checkmark.classList.add('hidden');
+                    } else {
+                        myPlan.push({ id, title });
+                        item.classList.add('bg-green-100', 'font-semibold');
+                        checkmark.classList.remove('hidden');
+                    }
+                    updatePlanList();
+                });
+            });
+
+            function updatePlanList() {
+                planList.innerHTML = '';
+                if (myPlan.length === 0) {
+                    planList.appendChild(planPlaceholder);
+                    clearPlanBtn.classList.add('hidden');
+                } else {
+                    myPlan.forEach(p => {
+                        const li = document.createElement('li');
+                        li.textContent = p.title;
+                        planList.appendChild(li);
+                    });
+                    clearPlanBtn.classList.remove('hidden');
+                }
+            }
+            
+            clearPlanBtn.addEventListener('click', () => {
+                myPlan = [];
+                planItems.forEach(item => {
+                    item.classList.remove('bg-green-100', 'font-semibold');
+                    item.querySelector('span').classList.add('hidden');
+                });
+                updatePlanList();
+            });
+
+            const sections = document.querySelectorAll('.section-fade-in');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('section-visible');
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+
+</body>
+</html>
